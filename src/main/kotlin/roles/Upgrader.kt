@@ -1,6 +1,10 @@
 package roles
 
+import actions.collect
+import actions.upgrade
 import screeps.api.*
+import states.HarvestState
+import states.harvestState
 
 object Upgrader : Role {
 
@@ -9,20 +13,13 @@ object Upgrader : Role {
             return arrayOf(WORK, CARRY, MOVE)
         }
 
-    override fun run(creep: Creep) {
-        with(creep) {
-            val controller = this.room.controller!!
-
-            if (store[RESOURCE_ENERGY] == 0) {
+    override fun run(creep: Creep) = with(creep) {
+        when (harvestState) {
+            HarvestState.Collecting -> {
                 val sources = room.find(FIND_SOURCES)
-                if (harvest(sources[0]) == ERR_NOT_IN_RANGE) {
-                    moveTo(sources[0].pos)
-                }
-            } else {
-                if (upgradeController(controller) == ERR_NOT_IN_RANGE) {
-                    moveTo(controller.pos)
-                }
+                collect(sources[0])
             }
+            HarvestState.Distributing -> upgrade(this.room.controller!!)
         }
     }
 

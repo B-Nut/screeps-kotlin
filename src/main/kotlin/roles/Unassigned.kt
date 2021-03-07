@@ -14,5 +14,4 @@ object Unassigned : Role {
     }
 
     override fun toString() = "Unassigned"
-
 }

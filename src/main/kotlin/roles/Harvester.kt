@@ -1,6 +1,9 @@
 package roles
 
+import actions.collect
 import screeps.api.*
+import states.HarvestState
+import states.harvestState
 
 
 object Harvester : Role {
@@ -14,9 +17,7 @@ object Harvester : Role {
         when (harvestState) {
             HarvestState.Collecting -> {
                 val sources = room.find(FIND_SOURCES)
-                if (harvest(sources[0]) == ERR_NOT_IN_RANGE) {
-                    moveTo(sources[0].pos)
-                }
+                collect(sources[0])
             }
             HarvestState.Distributing -> {
                 val targets = room.find(FIND_MY_STRUCTURES)
@@ -33,19 +34,5 @@ object Harvester : Role {
         }
     }
 
-
     override fun toString() = "Harvester"
-}
-
-private val Creep.harvestState: HarvestState
-    get() =
-        if (store[RESOURCE_ENERGY] < store.getCapacity()) {
-            HarvestState.Collecting
-        } else {
-            HarvestState.Distributing
-        }
-
-private sealed class HarvestState {
-    object Collecting : HarvestState()
-    object Distributing : HarvestState()
 }

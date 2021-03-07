@@ -1,7 +1,10 @@
 package roles
 
+import actions._build
+import actions.collect
 import screeps.api.*
-import starter.building
+import states.HarvestState
+import states.harvestState
 
 object Builder : Role {
 
@@ -10,28 +13,16 @@ object Builder : Role {
             return arrayOf(WORK, CARRY, MOVE)
         }
 
-    override fun run(creep: Creep) {
-        with(creep) {
-            if (memory.building && store[RESOURCE_ENERGY] == 0) {
-                memory.building = false
-                say("🔄 harvest")
+    override fun run(creep: Creep) = with(creep) {
+        when (harvestState) {
+            HarvestState.Collecting -> {
+                val sources = room.find(FIND_SOURCES)
+                collect(sources[0])
             }
-            if (!memory.building && store[RESOURCE_ENERGY] == store.getCapacity()) {
-                memory.building = true
-                say("🚧 build")
-            }
-
-            if (memory.building) {
+            HarvestState.Distributing -> {
                 val targets = this.room.find(FIND_MY_CONSTRUCTION_SITES)
                 if (targets.isNotEmpty()) {
-                    if (build(targets[0]) == ERR_NOT_IN_RANGE) {
-                        moveTo(targets[0].pos)
-                    }
-                }
-            } else {
-                val sources = room.find(FIND_SOURCES)
-                if (harvest(sources[0]) == ERR_NOT_IN_RANGE) {
-                    moveTo(sources[0].pos)
+                    _build(targets[0])
                 }
             }
         }
