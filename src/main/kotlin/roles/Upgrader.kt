@@ -3,6 +3,12 @@ package roles
 import screeps.api.*
 
 object Upgrader : Role {
+
+    override val body: Array<BodyPartConstant>
+        get() {
+            return arrayOf(WORK, CARRY, MOVE)
+        }
+
     override fun run(creep: Creep) {
         with(creep) {
             val controller = this.room.controller!!

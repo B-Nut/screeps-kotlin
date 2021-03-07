@@ -4,6 +4,12 @@ import screeps.api.*
 import starter.building
 
 object Builder : Role {
+
+    override val body: Array<BodyPartConstant>
+        get() {
+            return arrayOf(WORK, CARRY, MOVE)
+        }
+
     override fun run(creep: Creep) {
         with(creep) {
             if (memory.building && store[RESOURCE_ENERGY] == 0) {

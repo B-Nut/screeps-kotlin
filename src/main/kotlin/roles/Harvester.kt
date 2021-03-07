@@ -4,6 +4,12 @@ import screeps.api.*
 
 
 object Harvester : Role {
+
+    override val body: Array<BodyPartConstant>
+        get() {
+            return arrayOf(WORK, WORK, CARRY, MOVE)
+        }
+
     override fun run(creep: Creep) = with(creep) {
         when (harvestState) {
             HarvestState.Collecting -> {

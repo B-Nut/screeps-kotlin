@@ -1,9 +1,11 @@
 package roles
 
+import screeps.api.BodyPartConstant
 import screeps.api.Creep
 import starter.role
 
 interface Role {
+    val body: Array<BodyPartConstant>
     fun run(creep: Creep)
 }
 
