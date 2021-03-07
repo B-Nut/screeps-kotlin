@@ -18,6 +18,7 @@ dependencies {
 
 val screepsUser: String? by project
 val screepsPassword: String? by project
+val localServerPath: String by project
 val screepsToken: String? by project
 val screepsHost: String? by project
 val screepsBranch: String? by project
@@ -86,4 +87,25 @@ tasks.register<RestTask>("deploy") {
         logger.lifecycle("uploading ${jsFiles.count()} files to branch '$branch' on server $host")
     }
 
+}
+
+tasks.register<Copy>("deployLocally") {
+    dependsOn(processDceKotlinJs)
+
+    val minifiedCodeLocation = File(minifiedJsDirectory)
+    val jsFiles = minifiedCodeLocation.listFiles { _, name -> name.endsWith(".js") }.orEmpty()
+    val (mainModule, otherModules) = jsFiles.partition { it.nameWithoutExtension == project.name }
+
+    val main = mainModule.firstOrNull()
+        ?: throw IllegalStateException("Could not find js file corresponding to main module in ${minifiedCodeLocation.absolutePath}. Was looking for ${project.name}.js")
+
+    val localServerFolder: File = File(localServerPath).also {
+        if (it.isDirectory.not()) throw IllegalStateException("Please specify your localServerPath correctly:\"$localServerPath\" in not a folder or doesn't exist.")
+    }
+
+    val targetFolder: File = File(localServerFolder, branch).also { it.createNewFile() }
+
+    from(main, otherModules)
+    into(targetFolder)
+    rename(main.nameWithoutExtension, "main")
 }
