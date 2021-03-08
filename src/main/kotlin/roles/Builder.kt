@@ -22,7 +22,10 @@ object Builder : Role {
             }
             BuildingState.Building -> {
                 setConstructionSiteMemory(pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES) ?: return)
-                _build(memory.constructionSite ?: return)
+                val returnCode = _build(memory.constructionSite ?: return@with)
+                if (returnCode != OK) {
+                    clearConstructionSiteMemory()
+                }
             }
         }
     }

@@ -1,7 +1,20 @@
 package roles
 
 import actions.collect
-import screeps.api.*
+import screeps.api.BodyPartConstant
+import screeps.api.CARRY
+import screeps.api.Creep
+import screeps.api.ERR_NOT_IN_RANGE
+import screeps.api.FIND_MY_STRUCTURES
+import screeps.api.FIND_SOURCES
+import screeps.api.MOVE
+import screeps.api.RESOURCE_ENERGY
+import screeps.api.STRUCTURE_EXTENSION
+import screeps.api.STRUCTURE_SPAWN
+import screeps.api.StoreOwner
+import screeps.api.WORK
+import screeps.api.compareTo
+import screeps.api.get
 import states.HarvestState
 import states.harvestState
 
@@ -13,7 +26,7 @@ object Harvester : Role {
             return arrayOf(WORK, WORK, CARRY, MOVE)
         }
 
-    override fun run(creep: Creep) = with(creep) {
+    override fun run(creep: Creep): Unit = with(creep) {
         when (harvestState) {
             HarvestState.Collecting -> {
                 val sources = room.find(FIND_SOURCES)
