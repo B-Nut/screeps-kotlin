@@ -13,8 +13,8 @@ class SimpleSpawnStrategy(spawn: StructureSpawn) : SpawnStrategy(spawn) {
 
     private val roles: List<Pair<Role, Int>> = listOf(
         Harvester to 4,
-        Upgrader to 2,
-        Builder to 2
+        Upgrader to 3,
+        Builder to 3
     )
 
     private fun Array<Creep>.withRole(role: Role): Int = this.count { it.memory.role == role.toString() }

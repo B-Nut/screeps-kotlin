@@ -3,11 +3,11 @@ package roles
 import actions._build
 import actions.collect
 import screeps.api.*
+import screeps.utils.memory.memory
 import states.BuildingState
 import states.buildingState
 
 object Builder : Role {
-
     override val body: Array<BodyPartConstant>
         get() {
             return arrayOf(WORK, WORK, CARRY, MOVE)
@@ -16,17 +16,27 @@ object Builder : Role {
     override fun run(creep: Creep) = with(creep) {
         when (buildingState) {
             BuildingState.Collecting -> {
+                clearConstructionSiteMemory()
                 val sources = room.find(FIND_SOURCES)
-                collect(sources[0])
+                collect(sources[1])
             }
             BuildingState.Building -> {
-                val targets = this.room.find(FIND_MY_CONSTRUCTION_SITES)
-                if (targets.isNotEmpty()) {
-                    _build(targets[0])
-                }
+                setConstructionSiteMemory(pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES) ?: return)
+                _build(memory.constructionSite ?: return)
             }
         }
     }
 
     override fun toString() = "Builder"
+}
+
+var CreepMemory.constructionSiteId: String by memory { "" }
+private val CreepMemory.constructionSite: ConstructionSite? get() = Game.getObjectById(constructionSiteId)
+
+private fun Creep.clearConstructionSiteMemory() {
+    if (memory.constructionSiteId.isEmpty().not()) memory.constructionSiteId = ""
+}
+
+private fun Creep.setConstructionSiteMemory(constructionSite: ConstructionSite) {
+    if (memory.constructionSiteId.isEmpty()) memory.constructionSiteId = constructionSite.id
 }
