@@ -4,10 +4,25 @@ import roles.Builder
 import roles.Harvester
 import roles.Role
 import roles.Upgrader
-import screeps.api.*
+import screeps.api.BODYPART_COST
+import screeps.api.BodyPartConstant
+import screeps.api.Creep
+import screeps.api.CreepMemory
+import screeps.api.ERR_BUSY
+import screeps.api.ERR_NOT_ENOUGH_ENERGY
+import screeps.api.Game
+import screeps.api.OK
+import screeps.api.ScreepsReturnCode
+import screeps.api.SpawnMemory
+import screeps.api.get
+import screeps.api.options
 import screeps.api.structures.StructureSpawn
+import screeps.api.values
+import screeps.utils.memory.memory
 import screeps.utils.unsafe.jsObject
 import starter.role
+
+var SpawnMemory.nextBodyDebug: String by memory { "" }
 
 class SimpleSpawnStrategy(spawn: StructureSpawn) : SpawnStrategy(spawn) {
 
@@ -17,35 +32,43 @@ class SimpleSpawnStrategy(spawn: StructureSpawn) : SpawnStrategy(spawn) {
         Builder to 3
     )
 
+    private val role: Role?
+        get() = roles.firstOrNull { roleMapEntry ->
+            Game.creeps.values.withRole(roleMapEntry.first) < roleMapEntry.second
+        }?.first
+
     private fun Array<Creep>.withRole(role: Role): Int = this.count { it.memory.role == role.toString() }
 
-    private fun nextCreepRole(creeps: Array<Creep>): Role? {
-        roles.forEach { roleMapEntry ->
-            if (creeps.withRole(roleMapEntry.first) < roleMapEntry.second) {
-                return roleMapEntry.first
+    private val Role.body: Array<BodyPartConstant>?
+        get() = this.bodies.minByOrNull {
+            val diff = spawn.room.energyCapacityAvailable - it.cost
+            if (diff >= 0) {
+                diff
+            } else {
+                spawn.room.energyCapacityAvailable
             }
         }
-        return null
-    }
+    private val Array<BodyPartConstant>.cost: Int
+        get() = this.sumBy { BODYPART_COST[it]!! }
 
     override fun spawnCreep() {
-        val creeps: Array<Creep> = Game.creeps.values
+        val role = role ?: return
+        val body = role.body ?: return
 
-        val role: Role = nextCreepRole(creeps) ?: return
-
-        if (spawn.room.energyAvailable < role.body.sumBy { BODYPART_COST[it]!! }) {
+        if (spawn.room.energyAvailable < body.cost) {
+            spawn.memory.nextBodyDebug = "Next Creep: $role with body: $body"
             return
         }
 
         val newName = "${role}_${Game.time}"
-        spawn.spawnCreep(role.body, newName, options {
+        spawn.spawnCreep(body, newName, options {
             memory = jsObject<CreepMemory> { this.role = role.toString() }
-        }).also { this.handleSpawnReturn(it, role) }
+        }).also(this::handleSpawnReturn)
     }
 
-    private fun handleSpawnReturn(code: ScreepsReturnCode, role: Role) {
+    private fun handleSpawnReturn(code: ScreepsReturnCode) {
         when (code) {
-            OK -> console.log("Spawning $role with body ${role.body}")
+            OK -> console.log("Spawning $role")
             ERR_BUSY, ERR_NOT_ENOUGH_ENERGY -> run { } // do nothing
             else -> console.log("unhandled error code $code")
         }

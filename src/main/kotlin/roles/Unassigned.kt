@@ -1,12 +1,15 @@
 package roles
 
-import screeps.api.*
+import screeps.api.BodyPartConstant
+import screeps.api.CARRY
+import screeps.api.Creep
+import screeps.api.MOVE
+import screeps.api.WORK
 
 object Unassigned : Role {
-
-    override val body: Array<BodyPartConstant>
+    override val bodies: Array<Array<BodyPartConstant>>
         get() {
-            return arrayOf(WORK, CARRY, MOVE)
+            return arrayOf(arrayOf(WORK, CARRY, MOVE))
         }
 
     override fun run(creep: Creep) {

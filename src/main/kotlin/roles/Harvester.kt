@@ -20,10 +20,12 @@ import states.harvestState
 
 
 object Harvester : Role {
-
-    override val body: Array<BodyPartConstant>
+    override val bodies: Array<Array<BodyPartConstant>>
         get() {
-            return arrayOf(WORK, WORK, CARRY, MOVE)
+            return arrayOf(
+                arrayOf(WORK, WORK, CARRY, MOVE),
+                arrayOf(WORK, WORK, CARRY, CARRY, MOVE, MOVE)
+            )
         }
 
     override fun run(creep: Creep): Unit = with(creep) {
